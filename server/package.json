@@ -1,21 +1,44 @@
 {
-  "name": "shopsmart-backend",
+  "name": "shopsmart-server",
   "version": "1.0.0",
-  "description": "Backend API for ShopSmart",
+  "private": true,
+  "type": "commonjs",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "playwright test",
-    "lint": "echo 'No linter configured yet'"
+    "start": "node src/index.js",
+    "lint": "eslint \"src/**/*.js\" \"tests/**/*.js\"",
+    "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\"",
+    "prisma:generate": "prisma generate --schema ../prisma/schema.prisma",
+    "prisma:migrate": "cross-env RUST_LOG=info prisma migrate deploy --schema ../prisma/schema.prisma",
+    "prisma:migrate:dev": "cross-env RUST_LOG=info prisma migrate dev --schema ../prisma/schema.prisma",
+    "prisma:seed": "prisma db seed --schema ../prisma/schema.prisma",
+    "test:prepare": "cross-env DATABASE_URL=file:./test.db RUST_LOG=info prisma db push --schema ../prisma/schema.prisma --force-reset --skip-generate",
+    "test": "npm run test:prepare && jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:unit": "jest --runInBand tests/unit",
+    "test:integration": "npm run test:prepare && jest --runInBand tests/integration"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.21.2",
+    "helmet": "^7.2.0",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
-    "nodemon": "^3.1.0"
+    "cross-env": "^7.0.3",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.3.3",
+    "prisma": "^5.22.0",
+    "supertest": "^7.1.1"
+  },
+  "prisma": {
+    "seed": "node ../prisma/seed.js"
   }
 }

@@ -1,24 +1,38 @@
-const express = require('express');
 const cors = require('cors');
+const express = require('express');
+const helmet = require('helmet');
+const morgan = require('morgan');
+
+const environment = require('./config/env');
+const taskRoutes = require('./routes/taskRoutes');
+const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+app.use(helmet());
+app.use(
+  cors({
+    origin: environment.corsOrigin,
+  }),
+);
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+if (environment.nodeEnv !== 'test') {
+  app.use(morgan(environment.nodeEnv === 'production' ? 'combined' : 'dev'));
+}
 
-// Health Check Route
 app.get('/api/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     status: 'ok',
-    message: 'ShopSmart Backend is running',
-    timestamp: new Date().toISOString()
+    message: 'ShopSmart API is healthy',
+    timestamp: new Date().toISOString(),
   });
 });
 
-// Root Route (optional, just to show something)
-app.get('/', (req, res) => {
-  res.send('ShopSmart Backend Service');
-});
+app.use('/tasks', taskRoutes);
+app.use('/api/tasks', taskRoutes);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;
