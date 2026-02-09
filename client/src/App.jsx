@@ -1,36 +1,53 @@
-import { useState, useEffect } from 'react'
+import TaskForm from './components/TaskForm';
+import TaskList from './components/TaskList';
+import useTasks from './hooks/useTasks';
 
 function App() {
-    const [data, setData] = useState(null);
+  const { tasks, loading, error, processing, createTask, updateTask, deleteTask, loadTasks } =
+    useTasks();
 
-    useEffect(() => {
-        const apiUrl = import.meta.env.VITE_API_URL || '';
-        fetch(`${apiUrl}/api/health`)
-            .then(res => res.json())
-            .then(data => setData(data))
-            .catch(err => console.error('Error fetching health check:', err));
-    }, []);
+  return (
+    <main className="app-shell">
+      <div className="glow-orb" aria-hidden="true" />
+      <section className="panel hero">
+        <p className="eyebrow">ShopSmart Productivity</p>
+        <h1>Task Command Center</h1>
+        <p>
+          Capture priorities, update status instantly, and manage work with a production-ready
+          stack.
+        </p>
+      </section>
 
-    return (
-        <div className="container">
-            <h1>ShopSmart</h1>
-            <div className="card">
-                <h2>Backend Status</h2>
-                {data ? (
-                    <div>
-                        <p>Status: <span className="status-ok">{data.status}</span></p>
-                        <p>Message: {data.message}</p>
-                        <p>Timestamp: {data.timestamp}</p>
-                    </div>
-                ) : (
-                    <p>Loading backend status...</p>
-                )}
-            </div>
-            <p className="hint">
-                Edit <code>src/App.jsx</code> and save to test HMR
-            </p>
+      <section className="panel">
+        <div className="section-header">
+          <h2>Create Task</h2>
+          <button
+            type="button"
+            className="button secondary"
+            onClick={loadTasks}
+            disabled={loading || processing}
+          >
+            Refresh
+          </button>
         </div>
-    )
+        <TaskForm onSubmit={createTask} submitLabel="Create Task" busy={processing} />
+      </section>
+
+      <section className="panel">
+        <div className="section-header">
+          <h2>All Tasks</h2>
+          <span className="badge">{tasks.length} items</span>
+        </div>
+
+        {loading ? <p className="status">Loading tasks...</p> : null}
+        {error ? <p className="status error">{error}</p> : null}
+
+        {!loading && !error ? (
+          <TaskList tasks={tasks} onDelete={deleteTask} onUpdate={updateTask} busy={processing} />
+        ) : null}
+      </section>
+    </main>
+  );
 }
 
-export default App
+export default App;
