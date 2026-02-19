@@ -31,6 +31,13 @@ jobs:
           cache-dependency-path: client/package-lock.json
       - name: Install dependencies
         run: npm install
+      - name: Install server test deps (Playwright)
+        run: |
+          npm install
+          npx playwright install --with-deps
+
+      - name: Run server tests
+        run: npm test
 
       - name: Build
         run: npm run build

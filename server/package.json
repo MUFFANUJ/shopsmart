@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "jest",
+    "test": "playwright test",
     "lint": "echo 'No linter configured yet'"
   },
   "dependencies": {
@@ -15,8 +15,7 @@
     "express": "^4.19.2"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "nodemon": "^3.1.0",
-    "supertest": "^6.3.4"
+    "@playwright/test": "^1.40.0",
+    "nodemon": "^3.1.0"
   }
 }
