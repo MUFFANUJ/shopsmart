@@ -1,7 +1,16 @@
 node_modules
+**/node_modules
 .DS_Store
 .env
+.env.*
+!.env.example
+coverage
+**/coverage
 dist
 build
-coverage
 .vercel
+*.db
+*.db-journal
+logs
+tmp
+playwright-report

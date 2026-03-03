@@ -1,0 +1,23 @@
+{
+  "name": "shopsmart",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm ci --prefix server && npm ci --prefix client",
+    "lint": "npm run lint --prefix server && npm run lint --prefix client",
+    "format": "npm run format --prefix server && npm run format --prefix client && prettier --write \"README.md\" \".github/**/*.yml\" \"tests/**/*.js\"",
+    "format:check": "npm run format:check --prefix server && npm run format:check --prefix client && prettier --check \"README.md\" \".github/**/*.yml\" \"tests/**/*.js\"",
+    "test": "npm run test --prefix server && npm run test --prefix client",
+    "test:unit": "npm run test:unit --prefix server && npm run test --prefix client",
+    "test:integration": "npm run test:integration --prefix server",
+    "test:e2e": "playwright test --config=tests/playwright.config.cjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.1",
+    "prettier": "^3.3.3",
+    "prisma": "^5.22.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  }
+}
