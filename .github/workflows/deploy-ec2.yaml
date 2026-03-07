@@ -1,0 +1,54 @@
+name: 04 Deploy to AWS EC2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Pull latest changes
+            cd /home/ubuntu/shopsmart
+            git pull origin main
+            
+            # Install PM2 globally if not already installed
+            if ! command -v pm2 &> /dev/null; then
+                sudo npm install -g pm2
+            fi
+
+            # Install dependencies
+            cd server
+            npm install
+
+            # Start or Restart application with PM2
+            # Check if process exists
+            if pm2 describe shopsmart-server > /dev/null; then
+                pm2 restart shopsmart-server
+            else
+                pm2 start src/index.js --name shopsmart-server
+            fi
+
+            # Save PM2 list for persistence
+            pm2 save
+            
+            # Note: For full persistence across reboots, you need to run 'pm2 startup' once manually on the server
+            # or include it here (requires sudo and might be interactive/distro specific)
+            # sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ${{ secrets.EC2_USERNAME }} --hp /home/${{ secrets.EC2_USERNAME }}
+            
+            # Build frontend
+            cd ../client
+            npm install
+            npm run build
+            # Assuming Nginx is serving the build folder directly
+            # or copy to /var/www/html
+            sudo cp -r dist/* /var/www/html/
