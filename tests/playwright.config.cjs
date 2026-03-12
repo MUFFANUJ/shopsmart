@@ -11,16 +11,23 @@ module.exports = defineConfig({
   webServer: [
     {
       command:
-        'npm run prisma:generate --prefix server && npm run prisma:migrate --prefix server && npm run start --prefix server',
+        'npm run prisma:generate --prefix server && npm run test:prepare --prefix server && npm run start --prefix server',
       url: 'http://localhost:5001/api/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
+      cwd: __dirname + '/..',
+      env: {
+        DATABASE_URL: 'file:./test.db',
+        NODE_ENV: 'test',
+        PORT: '5001',
+      },
     },
     {
       command: 'npm run dev --prefix client -- --host 127.0.0.1 --port 5173',
       url: 'http://127.0.0.1:5173',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
+      cwd: __dirname + '/..',
     },
   ],
 });
