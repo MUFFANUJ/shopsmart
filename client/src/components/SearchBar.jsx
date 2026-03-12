@@ -25,7 +25,9 @@ function SearchBar({ onSearch }) {
           aria-label="Search products"
         />
       </div>
-      <button type="submit" className="search-bar__btn">Search</button>
+      <button type="submit" className="search-bar__btn">
+        Search
+      </button>
       {term && (
         <button
           type="button"

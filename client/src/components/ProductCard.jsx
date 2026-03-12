@@ -41,7 +41,9 @@ function ProductCard({ product, onAddToCart, onViewDetails }) {
             loading="lazy"
           />
         ) : (
-          <span role="img" aria-label={product.category}>{emoji}</span>
+          <span role="img" aria-label={product.category}>
+            {emoji}
+          </span>
         )}
         <span className={`product-card__badge ${isStocked ? 'in-stock' : 'out-of-stock'}`}>
           {isStocked ? '✓ In Stock' : 'Sold Out'}
@@ -51,9 +53,7 @@ function ProductCard({ product, onAddToCart, onViewDetails }) {
       <div className="product-card__body">
         <div className="product-card__category">{product.category}</div>
         <h3 className="product-card__name">{product.name}</h3>
-        {product.description && (
-          <p className="product-card__description">{product.description}</p>
-        )}
+        {product.description && <p className="product-card__description">{product.description}</p>}
         <div className="product-card__rating">
           {renderStars(rating)}
           <span className="product-card__rating-count">({rating})</span>

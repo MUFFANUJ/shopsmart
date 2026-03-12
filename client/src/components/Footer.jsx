@@ -42,9 +42,7 @@ function Footer() {
         </div>
       </div>
 
-      <div className="footer__bottom">
-        © 2026 ShopSmart. Crafted with 💜 • All rights reserved.
-      </div>
+      <div className="footer__bottom">© 2026 ShopSmart. Crafted with 💜 • All rights reserved.</div>
     </footer>
   );
 }

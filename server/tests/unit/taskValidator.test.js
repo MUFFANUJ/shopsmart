@@ -23,7 +23,7 @@ describe('taskValidator', () => {
     it('throws AppError for missing title', () => {
       expect(() => validateCreatePayload({ description: 'No title' })).toThrow(AppError);
       expect(() => validateCreatePayload({ description: 'No title' })).toThrow(
-        'Title is required and must be a non-empty string.',
+        'Title is required and must be a non-empty string.'
       );
     });
   });
@@ -32,7 +32,7 @@ describe('taskValidator', () => {
     it('throws AppError when no update keys are provided', () => {
       expect(() => validateUpdatePayload({})).toThrow(AppError);
       expect(() => validateUpdatePayload({})).toThrow(
-        'At least one field must be provided for update.',
+        'At least one field must be provided for update.'
       );
     });
 

@@ -45,7 +45,7 @@ const useTasks = () => {
       setError('');
       const updatedTask = await taskApi.updateTask(id, payload);
       setTasks((previousTasks) =>
-        previousTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+        previousTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
       );
       return updatedTask;
     } catch (apiError) {
@@ -81,7 +81,7 @@ const useTasks = () => {
       updateTask,
       deleteTask,
     }),
-    [tasks, loading, error, processing, loadTasks, createTask, updateTask, deleteTask],
+    [tasks, loading, error, processing, loadTasks, createTask, updateTask, deleteTask]
   );
 };
 

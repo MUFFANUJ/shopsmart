@@ -27,7 +27,8 @@ function CheckoutPage({ cart, onPlaceOrder, onBack }) {
   const validateShipping = () => {
     const errs = {};
     if (!shipping.fullName.trim()) errs.fullName = 'Full name is required';
-    if (!shipping.email.trim() || !/\S+@\S+\.\S+/.test(shipping.email)) errs.email = 'Valid email is required';
+    if (!shipping.email.trim() || !/\S+@\S+\.\S+/.test(shipping.email))
+      errs.email = 'Valid email is required';
     if (!shipping.address.trim()) errs.address = 'Address is required';
     if (!shipping.city.trim()) errs.city = 'City is required';
     if (!shipping.zipCode.trim()) errs.zipCode = 'ZIP code is required';
@@ -40,7 +41,8 @@ function CheckoutPage({ cart, onPlaceOrder, onBack }) {
     const cardNum = payment.cardNumber.replace(/\s/g, '');
     if (!cardNum || cardNum.length < 16) errs.cardNumber = 'Valid card number is required';
     if (!payment.cardName.trim()) errs.cardName = 'Name on card is required';
-    if (!payment.expiry.trim() || !/^\d{2}\/\d{2}$/.test(payment.expiry)) errs.expiry = 'Valid expiry (MM/YY) is required';
+    if (!payment.expiry.trim() || !/^\d{2}\/\d{2}$/.test(payment.expiry))
+      errs.expiry = 'Valid expiry (MM/YY) is required';
     if (!payment.cvv.trim() || payment.cvv.length < 3) errs.cvv = 'Valid CVV is required';
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -102,7 +104,9 @@ function CheckoutPage({ cart, onPlaceOrder, onBack }) {
             </div>
             <div className="checkout-confirmation__row">
               <span>Shipping To</span>
-              <span>{shipping.city}, {shipping.country}</span>
+              <span>
+                {shipping.city}, {shipping.country}
+              </span>
             </div>
           </div>
 
@@ -143,12 +147,16 @@ function CheckoutPage({ cart, onPlaceOrder, onBack }) {
         <div className="checkout-page__form-section">
           {/* Progress Steps */}
           <div className="checkout-steps">
-            <div className={`checkout-steps__step ${step === 'shipping' ? 'checkout-steps__step--active' : 'checkout-steps__step--done'}`}>
+            <div
+              className={`checkout-steps__step ${step === 'shipping' ? 'checkout-steps__step--active' : 'checkout-steps__step--done'}`}
+            >
               <span className="checkout-steps__num">1</span>
               <span>Shipping</span>
             </div>
             <div className="checkout-steps__line" />
-            <div className={`checkout-steps__step ${step === 'payment' ? 'checkout-steps__step--active' : ''}`}>
+            <div
+              className={`checkout-steps__step ${step === 'payment' ? 'checkout-steps__step--active' : ''}`}
+            >
               <span className="checkout-steps__num">2</span>
               <span>Payment</span>
             </div>
@@ -232,11 +240,15 @@ function CheckoutPage({ cart, onPlaceOrder, onBack }) {
                 <input
                   className={`checkout-form__input ${errors.cardNumber ? 'checkout-form__input--error' : ''}`}
                   value={payment.cardNumber}
-                  onChange={(e) => setPayment({ ...payment, cardNumber: formatCardNumber(e.target.value) })}
+                  onChange={(e) =>
+                    setPayment({ ...payment, cardNumber: formatCardNumber(e.target.value) })
+                  }
                   placeholder="4242 4242 4242 4242"
                   maxLength="19"
                 />
-                {errors.cardNumber && <span className="checkout-form__error">{errors.cardNumber}</span>}
+                {errors.cardNumber && (
+                  <span className="checkout-form__error">{errors.cardNumber}</span>
+                )}
               </div>
 
               <div className="checkout-form__group">
@@ -256,7 +268,9 @@ function CheckoutPage({ cart, onPlaceOrder, onBack }) {
                   <input
                     className={`checkout-form__input ${errors.expiry ? 'checkout-form__input--error' : ''}`}
                     value={payment.expiry}
-                    onChange={(e) => setPayment({ ...payment, expiry: formatExpiry(e.target.value) })}
+                    onChange={(e) =>
+                      setPayment({ ...payment, expiry: formatExpiry(e.target.value) })
+                    }
                     placeholder="MM/YY"
                     maxLength="5"
                   />
@@ -268,7 +282,9 @@ function CheckoutPage({ cart, onPlaceOrder, onBack }) {
                     className={`checkout-form__input ${errors.cvv ? 'checkout-form__input--error' : ''}`}
                     type="password"
                     value={payment.cvv}
-                    onChange={(e) => setPayment({ ...payment, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+                    onChange={(e) =>
+                      setPayment({ ...payment, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })
+                    }
                     placeholder="•••"
                     maxLength="4"
                   />
@@ -300,11 +316,7 @@ function CheckoutPage({ cart, onPlaceOrder, onBack }) {
             {cart.map((item) => (
               <div className="checkout-summary__item" key={item.id}>
                 <div className="checkout-summary__item-img">
-                  {item.image ? (
-                    <img src={item.image} alt={item.name} />
-                  ) : (
-                    <span>📦</span>
-                  )}
+                  {item.image ? <img src={item.image} alt={item.name} /> : <span>📦</span>}
                 </div>
                 <div className="checkout-summary__item-info">
                   <div className="checkout-summary__item-name">{item.name}</div>

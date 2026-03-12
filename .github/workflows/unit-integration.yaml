@@ -25,10 +25,10 @@ jobs:
         run: cd server && npm ci
 
       - name: Generate Prisma Client
-        run: cd server && npx prisma generate
+        run: cd server && npm run prisma:generate
 
       - name: Push Database Schema
-        run: cd server && npx prisma db push
+        run: cd server && npm run test:prepare
         env:
           DATABASE_URL: "file:./test.db"
 
@@ -71,10 +71,10 @@ jobs:
         run: cd server && npm ci
 
       - name: Generate Prisma Client
-        run: cd server && npx prisma generate
+        run: cd server && npm run prisma:generate
 
       - name: Push Database Schema
-        run: cd server && npx prisma db push
+        run: cd server && npm run test:prepare
         env:
           DATABASE_URL: "file:./test.db"
 

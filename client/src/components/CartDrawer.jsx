@@ -49,7 +49,9 @@ function CartDrawer({ cart, onClose, onUpdateQty, onRemove, onCheckout }) {
                   <div className="cart-item__controls">
                     <button
                       className="cart-item__qty-btn"
-                      onClick={() => (item.qty <= 1 ? onRemove(item.id) : onUpdateQty(item.id, item.qty - 1))}
+                      onClick={() =>
+                        item.qty <= 1 ? onRemove(item.id) : onUpdateQty(item.id, item.qty - 1)
+                      }
                       aria-label="Decrease quantity"
                     >
                       {item.qty <= 1 ? '🗑' : '−'}

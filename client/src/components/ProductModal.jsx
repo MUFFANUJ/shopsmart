@@ -31,7 +31,9 @@ function ProductModal({ product, onClose, onAddToCart }) {
           {hasImage ? (
             <img src={product.image} alt={product.name} className="modal__img" />
           ) : (
-            <span role="img" aria-label={product.category}>{emoji}</span>
+            <span role="img" aria-label={product.category}>
+              {emoji}
+            </span>
           )}
         </div>
 
