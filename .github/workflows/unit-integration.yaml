@@ -83,15 +83,6 @@ jobs:
         env:
           DATABASE_URL: "file:./test.db"
 
-      - name: Start Server
-        run: |
-          cd server
-          npm run dev &
-          npx wait-on http://localhost:5001/api/health
-        env:
-          PORT: 5001
-          DATABASE_URL: "file:./test.db"
-
       - name: Install Client Dependencies & Build
         run: cd client && npm ci && npm run build
 
