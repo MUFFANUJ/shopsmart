@@ -50,7 +50,7 @@ jobs:
         run: cd client && npm ci
 
       - name: Run Client Tests
-        run: cd client && npx vitest --run src/
+        run: cd client && npm test
 
   e2e-tests:
     timeout-minutes: 30

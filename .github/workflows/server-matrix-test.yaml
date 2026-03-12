@@ -31,11 +31,11 @@ jobs:
 
       - name: Generate Prisma Client
         working-directory: ./server
-        run: npx prisma generate
+        run: npm run prisma:generate
 
       - name: Push Database Schema
         working-directory: ./server
-        run: npx prisma db push
+        run: npm run test:prepare
         env:
           DATABASE_URL: "file:./test.db"
 
