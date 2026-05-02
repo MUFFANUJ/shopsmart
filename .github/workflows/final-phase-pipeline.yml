@@ -10,12 +10,11 @@ env:
   TF_DIR: final-phase/terraform
 
 jobs:
-
   # ─────────────────────────────────────────────────────────
   # PHASE 1: Tests
   # ─────────────────────────────────────────────────────────
   test:
-    name: "Phase 1 — Tests"
+    name: 'Phase 1 — Tests'
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install root dependencies
         run: npm ci
@@ -55,29 +54,29 @@ jobs:
   # PHASE 2: Terraform Infrastructure
   # ─────────────────────────────────────────────────────────
   infrastructure:
-    name: "Phase 2 — Terraform"
+    name: 'Phase 2 — Terraform'
     runs-on: ubuntu-latest
     needs: test
 
     outputs:
-      ecr_url:      ${{ steps.tf_out.outputs.ecr_url }}
+      ecr_url: ${{ steps.tf_out.outputs.ecr_url }}
       cluster_name: ${{ steps.tf_out.outputs.cluster_name }}
-      stack_name:   ${{ steps.tf_out.outputs.stack_name }}
-      s3_bucket:    ${{ steps.tf_out.outputs.s3_bucket }}
+      stack_name: ${{ steps.tf_out.outputs.stack_name }}
+      s3_bucket: ${{ steps.tf_out.outputs.s3_bucket }}
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region:            ${{ secrets.AWS_REGION }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.9.0"
+          terraform_version: '1.9.0'
 
       - name: Terraform Init
         working-directory: ${{ env.TF_DIR }}
@@ -114,7 +113,7 @@ jobs:
   # PHASE 3: Docker Build + ECS Deploy + Verify
   # ─────────────────────────────────────────────────────────
   deploy:
-    name: "Phase 3 — Deploy"
+    name: 'Phase 3 — Deploy'
     runs-on: ubuntu-latest
     needs: infrastructure
 
@@ -123,10 +122,10 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region:            ${{ secrets.AWS_REGION }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Download Terraform state
         uses: actions/download-artifact@v4
@@ -156,7 +155,7 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.9.0"
+          terraform_version: '1.9.0'
 
       - name: Terraform Init
         working-directory: ${{ env.TF_DIR }}
