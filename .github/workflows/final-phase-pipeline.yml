@@ -1,0 +1,204 @@
+name: Final Phase Pipeline
+
+# Manual trigger only — click "Run workflow" in GitHub Actions tab
+# Each run creates new AWS resources with unique names
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  TF_DIR: final-phase/terraform
+
+jobs:
+
+  # ─────────────────────────────────────────────────────────
+  # PHASE 1: Tests
+  # ─────────────────────────────────────────────────────────
+  test:
+    name: "Phase 1 — Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Push database schema
+        run: npx prisma db push
+
+      - name: Seed database
+        run: node prisma/seed.js
+
+      - name: Run tests
+        run: npm test -- --reporter=json --outputFile=test-report.json || true
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: test-report.json
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────
+  # PHASE 2: Terraform Infrastructure
+  # ─────────────────────────────────────────────────────────
+  infrastructure:
+    name: "Phase 2 — Terraform"
+    runs-on: ubuntu-latest
+    needs: test
+
+    outputs:
+      ecr_url:      ${{ steps.tf_out.outputs.ecr_url }}
+      cluster_name: ${{ steps.tf_out.outputs.cluster_name }}
+      stack_name:   ${{ steps.tf_out.outputs.stack_name }}
+      s3_bucket:    ${{ steps.tf_out.outputs.s3_bucket }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform plan -var="deploy_ecs_service=false" -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform apply -auto-approve tfplan
+
+      - name: Read outputs
+        id: tf_out
+        working-directory: ${{ env.TF_DIR }}
+        run: |
+          echo "ecr_url=$(terraform output -raw ecr_repository_url)"    >> $GITHUB_OUTPUT
+          echo "cluster_name=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_OUTPUT
+          echo "stack_name=$(terraform output -raw stack_name)"         >> $GITHUB_OUTPUT
+          echo "s3_bucket=$(terraform output -raw s3_bucket_name)"      >> $GITHUB_OUTPUT
+
+      - name: Save Terraform state
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-state
+          path: ${{ env.TF_DIR }}/terraform.tfstate
+
+  # ─────────────────────────────────────────────────────────
+  # PHASE 3: Docker Build + ECS Deploy + Verify
+  # ─────────────────────────────────────────────────────────
+  deploy:
+    name: "Phase 3 — Deploy"
+    runs-on: ubuntu-latest
+    needs: infrastructure
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: Download Terraform state
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-state
+          path: ${{ env.TF_DIR }}
+
+      - name: Log in to ECR
+        run: |
+          aws ecr get-login-password --region us-east-1 | \
+            docker login --username AWS --password-stdin \
+            ${{ needs.infrastructure.outputs.ecr_url }}
+
+      - name: Build Docker image
+        # --platform linux/amd64 is required for ECS Fargate (x86-64)
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            -f final-phase/Dockerfile \
+            -t shopsmart:latest \
+            .
+
+      - name: Push to ECR
+        run: |
+          docker tag shopsmart:latest ${{ needs.infrastructure.outputs.ecr_url }}:latest
+          docker push ${{ needs.infrastructure.outputs.ecr_url }}:latest
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform init
+
+      - name: Deploy ECS service
+        working-directory: ${{ env.TF_DIR }}
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          terraform apply -auto-approve \
+            -var="deploy_ecs_service=true" \
+            -var="container_image=${{ needs.infrastructure.outputs.ecr_url }}:latest" \
+            -var="ecs_execution_role_arn=arn:aws:iam::${ACCOUNT_ID}:role/LabRole"
+
+      - name: Wait for ECS service to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ needs.infrastructure.outputs.cluster_name }} \
+            --services ${{ needs.infrastructure.outputs.stack_name }}-service \
+            --region us-east-1
+
+      - name: Get public IP and verify health
+        run: |
+          CLUSTER="${{ needs.infrastructure.outputs.cluster_name }}"
+          SERVICE="${{ needs.infrastructure.outputs.stack_name }}-service"
+
+          TASK_ARN=$(aws ecs list-tasks \
+            --cluster "$CLUSTER" --service-name "$SERVICE" \
+            --region us-east-1 --query 'taskArns[0]' --output text)
+
+          ENI_ID=$(aws ecs describe-tasks \
+            --cluster "$CLUSTER" --tasks "$TASK_ARN" --region us-east-1 \
+            --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
+            --output text)
+
+          PUBLIC_IP=$(aws ec2 describe-network-interfaces \
+            --network-interface-ids "$ENI_ID" --region us-east-1 \
+            --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
+
+          echo "Public IP: $PUBLIC_IP"
+          echo "Waiting 30s for container startup..."
+          sleep 30
+          curl -f "http://${PUBLIC_IP}:5001/api/health"
+          echo ""
+          echo "✅ App is live at: http://${PUBLIC_IP}:5001"

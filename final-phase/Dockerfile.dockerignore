@@ -1,0 +1,7 @@
+node_modules
+.git
+*.md
+final-phase/terraform
+final-phase/scripts
+client
+tests
