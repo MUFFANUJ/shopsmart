@@ -31,14 +31,8 @@ jobs:
         working-directory: server
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npx prisma generate
-
-      - name: Push database schema
-        run: npx prisma db push
-
       - name: Seed database
-        run: node prisma/seed.js
+        run: cd server && npm run prisma:seed
 
       - name: Run tests
         run: npm test -- --reporter=json --outputFile=test-report.json || true

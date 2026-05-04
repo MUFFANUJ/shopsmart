@@ -13,7 +13,7 @@
     "prisma:generate": "prisma generate --schema ../prisma/schema.prisma",
     "prisma:migrate": "cross-env RUST_LOG=info prisma migrate deploy --schema ../prisma/schema.prisma",
     "prisma:migrate:dev": "cross-env RUST_LOG=info prisma migrate dev --schema ../prisma/schema.prisma",
-    "prisma:seed": "prisma db seed --schema ../prisma/schema.prisma",
+    "prisma:seed": "node scripts/seed-db.js",
     "test:prepare": "cross-env-shell \"DATABASE_URL=file:$PWD/prisma/test.db RUST_LOG=info prisma db push --schema ./prisma/schema.prisma --force-reset\"",
     "test": "npm run test:prepare && jest --runInBand",
     "test:watch": "jest --watch",
