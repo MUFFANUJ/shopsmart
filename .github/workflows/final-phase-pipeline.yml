@@ -131,7 +131,7 @@ jobs:
         run: |
           aws ecr get-login-password --region us-east-1 | \
             docker login --username AWS --password-stdin \
-            ${{ needs.infrastructure.outputs.ecr_url }}
+            $(echo "${{ needs.infrastructure.outputs.ecr_url }}" | cut -d'/' -f1)
 
       - name: Build Docker image
         # --platform linux/amd64 is required for ECS Fargate (x86-64)
