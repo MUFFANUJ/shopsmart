@@ -29,13 +29,11 @@ jobs:
 
       - name: Push Database Schema
         run: cd server && npm run test:prepare
-        env:
-          DATABASE_URL: "file:./test.db"
 
       - name: Run Server Tests
         run: cd server && npm test
         env:
-          DATABASE_URL: "file:./test.db"
+          DATABASE_URL: "file:${{ github.workspace }}/server/prisma/test.db"
 
       - name: Start Server
         run: |
@@ -44,7 +42,7 @@ jobs:
           npx wait-on http://localhost:5001/api/health
         env:
           PORT: 5001
-          DATABASE_URL: "file:./test.db"
+          DATABASE_URL: "file:${{ github.workspace }}/server/prisma/test.db"
 
       - name: Install Client Dependencies
         run: cd client && npm ci
@@ -75,13 +73,11 @@ jobs:
 
       - name: Push Database Schema
         run: cd server && npm run test:prepare
-        env:
-          DATABASE_URL: "file:./test.db"
 
       - name: Seed Database
-        run: cd server && npx prisma db seed
+        run: cd server && npm run prisma:seed
         env:
-          DATABASE_URL: "file:./test.db"
+          DATABASE_URL: "file:${{ github.workspace }}/server/prisma/test.db"
 
       - name: Install Client Dependencies & Build
         run: cd client && npm ci && npm run build

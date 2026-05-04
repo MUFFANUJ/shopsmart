@@ -1,4 +1,7 @@
 const { defineConfig } = require('@playwright/test');
+const path = require('node:path');
+
+const testDatabaseUrl = `file:${path.resolve(__dirname, '../server/prisma/test.db')}`;
 
 module.exports = defineConfig({
   testDir: './e2e',
@@ -17,7 +20,7 @@ module.exports = defineConfig({
       timeout: 120_000,
       cwd: __dirname + '/..',
       env: {
-        DATABASE_URL: 'file:./test.db',
+        DATABASE_URL: testDatabaseUrl,
         NODE_ENV: 'test',
         PORT: '5001',
       },

@@ -4,7 +4,8 @@ const path = require('node:path');
 const serverDir = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(serverDir, '..');
 const schemaPath = path.resolve(serverDir, '../prisma/schema.prisma');
-const databaseUrl = 'file:./prisma/dev.db';
+const defaultDatabaseUrl = `file:${path.resolve(repoRoot, 'prisma/dev.db')}`;
+const databaseUrl = process.env.DATABASE_URL?.trim() || defaultDatabaseUrl;
 
 const prismaBin =
   process.platform === 'win32'
